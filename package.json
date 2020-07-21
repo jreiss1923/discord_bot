@@ -1,0 +1,22 @@
+{
+  "name": "discord_bot_folder",
+  "version": "1.0.0",
+  "main": "discord_bot.js",
+  "dependencies": {
+    "discord.js": "^12.2.0",
+    "dotenv": "^8.2.0",
+    "mangadex-full-api": "^3.10.0"
+  },
+  "engines": {
+    "node": "12.x"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node discord_bot.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
