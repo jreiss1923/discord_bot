@@ -97,7 +97,7 @@ client.on('message', msg => {
     .setAuthor('The Plot Device')
     .setThumbnail('https://formeinfullbloom.files.wordpress.com/2017/06/gaen5.png')
     .setColor('#c5e300')
-    .addField("Here's my list of commands:", "!help - Shows all commands\n!search <manga title> - Search for the most recent release of a manga using the mangadex search function\n!report - Report an error")
+    .addField("Here's my list of commands:", "!help - Shows all commands\n!search <manga title> - Search for the most recent release of a manga using the mangadex search function\n!report - Report an error\n!ping - Check the ping of the bot")
     .setFooter("There is nothing that I don't know. I know everything.");
     msg.channel.send(helpEmbed);
     msg.channel.send(msg.author.toString());
@@ -112,6 +112,17 @@ client.on('message', msg => {
     .setFooter("I know nothing. It's you who knows, user-kun")
     msg.channel.send(reportEmbed);
     msg.channel.send(msg.author.toString());
+  }
+  else if (message_content.substring(0, 5) === '!ping') {
+    const pingEmbed = new Discord.MessageEmbed()
+    .setTitle("Ping Checker")
+    .setAuthor("The Plot Device")
+    .setThumbnail('https://formeinfullbloom.files.wordpress.com/2017/06/gaen5.png')
+    .setColor('#c5e300')
+    .addField("Your ping is: " + client.ws.ping + " ms.", "Your search will take longer than this.")
+    .setFooter("There is nothing that I don't know. I know everything.")
+    msg.channel.send(pingEmbed)
+    msg.channel.send(msg.author.toString())
   }
   else if (msg.author.toString() != "<@734215154228658198>" && message_content.substring(0, 1) === "!"){
     const errorEmbed = new Discord.MessageEmbed()
