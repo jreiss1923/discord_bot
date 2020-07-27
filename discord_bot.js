@@ -3,6 +3,8 @@ const Discord = require("discord.js");
 require('dotenv').config();
 api.agent.domainOverride = "mangadex.org";
 
+var language = "GB";
+
 const client = new Discord.Client();
 client.on('ready', () => {
   console.log("Bot is ready!");
@@ -45,22 +47,27 @@ client.on('message', msg => {
     var manga_title = message_content.substring(8, message_content.length);
     api.agent.login("jreiss1923", process.env.MANGADEX_PWD, false).then(() => {
       var manga = new api.Manga();
-      manga.fillByQuery(manga_title).then(manga => {
+      manga.fillByQuery(manga_title).then((manga) => {
         var latest_chapter;
         var manga_chapters = manga.chapters;
         for (let i = 0; i < manga_chapters.length; i++) {
-          if ((typeof latest_chapter === "undefined" || latest_chapter.timestamp < manga_chapters[i].timestamp) && manga_chapters[i].language === "GB") {
+          if ((typeof latest_chapter === "undefined" || latest_chapter.timestamp < manga_chapters[i].timestamp) && manga_chapters[i].language === language) {
             latest_chapter = manga_chapters[i];
           }
         }
-        return latest_chapter;
+        if (latest_chapter === undefined) {
+          return Promise.reject(new TypeError("Mangadex could not find the manga you were looking for in that language."));
+        }
+        else {
+          return latest_chapter;
+        }
       }).then(latest_chapter => {
         const mangaEmbed = new Discord.MessageEmbed()
         .setTitle('Your manga has been found!')
         .setAuthor('The Plot Device')
         .setThumbnail('https://formeinfullbloom.files.wordpress.com/2017/06/gaen5.png')
         .setColor('#c5e300')
-        .addField("The latest chapter of " + manga.title + " is Chapter " + latest_chapter.chapter + ", which was released on " + convertUnixToString(latest_chapter.timestamp), latest_chapter.link, true)
+        .addField("The latest chapter of " + manga.title + " in " + getLangString(language) + " is Chapter " + latest_chapter.chapter + ", which was released on " + convertUnixToString(latest_chapter.timestamp), latest_chapter.link, true)
         .setImage('https://www.mangadex.org' + manga.cover)
         .setTimestamp()
         .setFooter("There is nothing that I don't know. I know everything.");
@@ -97,7 +104,11 @@ client.on('message', msg => {
     .setAuthor('The Plot Device')
     .setThumbnail('https://formeinfullbloom.files.wordpress.com/2017/06/gaen5.png')
     .setColor('#c5e300')
-    .addField("Here's my list of commands:", "!help - Shows all commands\n!search <manga title> - Search for the most recent release of a manga using the mangadex search function\n!report - Report an error\n!ping - Check the ping of the bot")
+    .addField("Here's my list of commands:", "!help - Shows all commands"
+    +"\n!search <manga title> - Search for the most recent release of a manga using the mangadex search function"
+    +"\n!report - Report an error"
+    +"\n!ping - Check the ping of the bot"
+    +"\n!lang <code> - Changes the default language for this session:\nGB - English, ES - Spanish, MX - Spanish (Latin America)")
     .setFooter("There is nothing that I don't know. I know everything.");
     msg.channel.send(helpEmbed);
     msg.channel.send(msg.author.toString());
@@ -124,6 +135,34 @@ client.on('message', msg => {
     msg.channel.send(pingEmbed)
     msg.channel.send(msg.author.toString())
   }
+  else if (message_content.substring(0, 5) === '!lang') {
+    let lang_identifier = message_content.substring(6, 8);
+    lang_identifier = lang_identifier.toUpperCase();
+    if (lang_identifier=== "GB" || lang_identifier === "ES" || lang_identifier === "MX") {
+      language = lang_identifier;
+      const langEmbed = new Discord.MessageEmbed()
+      .setTitle("Your language has been updated!")
+      .setAuthor("The Plot Device")
+      .setThumbnail('https://formeinfullbloom.files.wordpress.com/2017/06/gaen5.png')
+      .setColor('#c5e300')
+      .addField("Your language has been changed to " + getLangString(language) + " for this session.", "To see the language codes, use !help.")
+      .setFooter("There is nothing that I don't know. I know everything.")
+      msg.channel.send(langEmbed)
+      msg.channel.send(msg.author.toString())
+    }
+    else {
+      const errorEmbed = new Discord.MessageEmbed()
+      .setTitle('Oops!')
+      .setAuthor('The Plot Device')
+      .setThumbnail('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fvignette.wikia.nocookie.net%2Fyandere-simulator%2Fimages%2F4%2F4c%2FOugi_Oshino.png%2Frevision%2Flatest%3Fcb%3D20170408052712&f=1&nofb=1')
+      .setColor('#c5e300')
+      .addField('This language code is not supported.', "The Plot Device currently supports English and Spanish.")
+      .setTimestamp()
+      .setFooter("I know nothing. It's you who knows, user-kun.");
+      msg.channel.send(errorEmbed);
+      msg.channel.send(msg.author.toString());
+    }
+  }
   else if (msg.author.toString() != "<@734215154228658198>" && message_content.substring(0, 1) === "!"){
     const errorEmbed = new Discord.MessageEmbed()
       .setTitle('Oops!')
@@ -143,9 +182,20 @@ function convertUnixToString(unixTime) {
   return (date.getMonth()+1) + "/" + date.getDate() + "/" + date.getFullYear();
 }
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+function getLangString(lang_identifier) {
+  switch(lang_identifier) {
+    case "GB":
+      return "English";
+    case "ES":
+      return "Spanish";
+    case "MX":
+      return "Spanish (Latin America)";
+    default:
+      return "";
+  }
 }
+
+
 
 
 client.login(process.env.BOT_KEY);
